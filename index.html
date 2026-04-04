@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>APEX — Cotiza Tu Página Web</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* CRITICAL FALLBACKS — ensure page works even if Google Fonts fails */
+html { background: #000000 !important; }
+body { 
+  background: #000000 !important; 
+  color: #ffffff !important;
+  font-family: 'Outfit', 'Helvetica Neue', Arial, sans-serif !important;
+}
+.nav-logo, .hero-brand, .hero-h2, .section-h2, .step-h2, 
+.card-name, .card-amount, .stat-num, .countdown-big,
+h1, h2, h3 {
+  font-family: 'Bebas Neue', 'Arial Black', Impact, sans-serif !important;
+  color: #ffffff;
+}
+.section-label, .field-label, .card-tier, .step-code,
+code, .live-price-label {
+  font-family: 'Space Mono', 'Courier New', Courier, monospace !important;
+}
+/* Ensure ALL text is visible */
+* { -webkit-font-smoothing: antialiased; }
+/* Force canvas background */
+#space-canvas { background: #000 !important; }
+</style>
+<style>
+:root {
+  --rojo: #FF1A1A;
+  --rojo-dim: rgba(255,26,26,0.15);
+  --blanco: #FFFFFF;
+  --gris-claro: #CCCCCC;
+  --gris: #888888;
+  --gris-oscuro: #444444;
+  --negro: #000000;
+  --card: #0E0E0E;
+  --card2: #141414;
+  --borde: rgba(255,255,255,0.08);
+  --borde-rojo: rgba(255,26,26,0.4);
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:#000000;}
+html{scroll-behavior:smooth;}
+
+body{
+background:var(–negro);
+color:var(–blanco);
+font-family:‘Outfit’,sans-serif;
+font-weight:400;
+overflow-x:hidden;
+cursor:default;
+}
+
+/* ── SPACE CANVAS ── */
+#space-canvas {
+position: fixed;
+inset: 0;
+width: 100%;
+height: 100%;
+pointer-events: none;
+z-index: 0;
+}
+
+/* Make all sections sit above canvas */
+nav, section, footer, .form-section, .features-section,
+.stats-section, .hero { position: relative; z-index: 2; }
+
+/* ── GRAIN ── */
+body::after{
+content:’’;
+position:fixed;inset:0;
+background-image:url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 200 200’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cfilter id=‘n’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=‘0.9’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23n)’ opacity=‘0.025’/%3E%3C/svg%3E”);
+pointer-events:none;
+z-index:9999;
+}
+
+/* ── NAV ── */
+nav{
+position:fixed;top:0;left:0;right:0;
+display:flex;align-items:center;justify-content:space-between;
+padding:16px 24px;
+background:rgba(0,0,0,0.92);
+backdrop-filter:blur(10px);
+border-bottom:1px solid var(–borde);
+z-index:1000;
+}
+.nav-logo{
+font-family:‘Bebas Neue’,sans-serif;
+font-size:1.8rem;
+letter-spacing:0.15em;
+color:var(–blanco);
+text-shadow:0 0 20px rgba(255,255,255,0.3);
+}
+.nav-logo span{color:var(–rojo);}
+.hamburger{
+display:flex;flex-direction:column;gap:5px;cursor:pointer;
+}
+.hamburger span{
+display:block;width:24px;height:2px;
+background:var(–blanco);
+}
+
+/* ── BRACKET CORNERS ── */
+.bracket{
+position:absolute;
+width:24px;height:24px;
+pointer-events:none;
+}
+.bracket.tl{top:16px;left:16px;border-top:2px solid rgba(255,255,255,0.25);border-left:2px solid rgba(255,255,255,0.25);}
+.bracket.tr{top:16px;right:16px;border-top:2px solid rgba(255,255,255,0.25);border-right:2px solid rgba(255,255,255,0.25);}
+.bracket.bl{bottom:16px;left:16px;border-bottom:2px solid rgba(255,255,255,0.25);border-left:2px solid rgba(255,255,255,0.25);}
+.bracket.br{bottom:16px;right:16px;border-bottom:2px solid rgba(255,255,255,0.25);border-right:2px solid rgba(255,255,255,0.25);}
+
+/* ── HERO ── */
+.hero{
+min-height:100vh;
+display:flex;flex-direction:column;
+align-items:center;justify-content:center;
+text-align:center;
+padding:100px 24px 60px;
+position:relative;
+overflow:hidden;
+}
+
+/* SVG Logo animado */
+.logo-svg-wrap{
+width:120px;height:80px;
+margin:0 auto 20px;
+filter:drop-shadow(0 0 18px rgba(255,255,255,0.5));
+animation:logoPulse 3s ease-in-out infinite;
+}
+
+.hero-divider-line{
+width:80%;max-width:500px;
+height:1px;
+background:linear-gradient(to right,transparent,rgba(255,255,255,0.3),transparent);
+margin:0 auto 28px;
+}
+
+.hero-brand{color:#ffffff !important;
+font-family:‘Bebas Neue’,sans-serif;
+font-size:clamp(5rem,22vw,11rem);
+letter-spacing:0.05em;
+line-height:0.9;
+color:var(–blanco);
+text-shadow:
+0 0 40px rgba(255,255,255,0.15),
+0 0 80px rgba(255,255,255,0.05);
+margin-bottom:10px;
+}
+
+.hero-tagline{
+font-family:‘Space Mono’,monospace;
+font-size:0.65rem;
+letter-spacing:0.3em;
+color:var(–gris);
+margin-bottom:36px;
+}
+
+.hero-h2{
+font-family:‘Bebas Neue’,sans-serif;
+font-size:clamp(1.1rem,4vw,1.8rem);
+letter-spacing:0.12em;
+color:var(–blanco);
+margin-bottom:14px;
+}
+.hero-sub{color:#cccccc !important;
+font-size:0.92rem;
+color:var(–gris-claro);
+line-height:1.7;
+margin-bottom:28px;
+max-width:480px;
+}
+
+/* Urgency bar */
+.urgency-bar{
+display:flex;align-items:center;gap:10px;
+border:1px solid var(–rojo);
+padding:12px 20px;
+margin-bottom:28px;
+width:100%;max-width:420px;
+background:rgba(255,26,26,0.05);
+}
+.urgency-dot{
+width:8px;height:8px;
+background:var(–rojo);
+border-radius:50%;
+flex-shrink:0;
+animation:blink 1s ease-in-out infinite;
+}
+.urgency-text{
+font-family:‘Space Mono’,monospace;
+font-size:0.62rem;
+letter-spacing:0.15em;
+color:var(–rojo);
+flex:1;
+}
+#hero-countdown{font-weight:700;}
+
+.hero-cta{
+display:flex;align-items:center;justify-content:space-between;
+width:100%;max-width:420px;
+padding:20px 28px;
+background:var(–blanco);
+color:var(–negro);
+font-family:‘Bebas Neue’,sans-serif;
+font-size:1.3rem;
+letter-spacing:0.15em;
+text-decoration:none;
+transition:all 0.3s;
+cursor:pointer;
+border:none;
+}
+.hero-cta:hover{background:#e0e0e0;transform:translateY(-2px);}
+.hero-cta-arrow{font-size:1.2rem;}
+
+/* ── FEATURES ── */
+.features-section{
+padding:80px 24px;
+position:relative;
+}
+.features-header{text-align:center;margin-bottom:48px;}
+.section-label{
+font-family:‘Space Mono’,monospace;
+font-size:0.6rem;
+letter-spacing:0.35em;
+color:var(–gris);
+margin-bottom:16px;
+display:block;
+}
+.section-h2{
+font-family:‘Bebas Neue’,sans-serif;
+font-size:clamp(2rem,7vw,3.5rem);
+letter-spacing:0.08em;
+line-height:1.05;
+}
+
+/* Mock device CSS */
+.device-wrap{
+display:flex;flex-direction:column;align-items:center;
+margin:0 auto 48px;
+max-width:340px;
+position:relative;
+}
+.mock-laptop{
+width:100%;
+background:#111;
+border:2px solid #333;
+border-radius:8px 8px 0 0;
+padding:8px;
+position:relative;
+}
+.mock-laptop-bar{
+display:flex;gap:5px;
+margin-bottom:6px;
+}
+.mock-dot{width:7px;height:7px;border-radius:50%;}
+.mock-dot.r{background:#ff5f56;}
+.mock-dot.y{background:#febc2e;}
+.mock-dot.g{background:#27c840;}
+.mock-screen{
+background:#000;
+height:120px;
+display:flex;flex-direction:column;justify-content:center;
+padding:10px;
+gap:5px;
+}
+.mock-line{
+height:4px;
+background:rgba(255,255,255,0.12);
+border-radius:2px;
+animation:shimmer 2s ease-in-out infinite;
+}
+.mock-line:nth-child(2){width:75%;animation-delay:0.2s;}
+.mock-line:nth-child(3){width:55%;animation-delay:0.4s;}
+.mock-line:nth-child(4){width:85%;animation-delay:0.6s;}
+.mock-line:nth-child(5){width:40%;animation-delay:0.8s;}
+.mock-laptop-base{
+width:90%;height:8px;
+background:#222;
+border-radius:0 0 4px 4px;
+}
+.mock-phone{
+width:52px;height:88px;
+background:#111;
+border:2px solid #333;
+border-radius:8px;
+margin-top:-10px;
+display:flex;flex-direction:column;justify-content:center;
+align-items:center;gap:4px;
+padding:8px;
+}
+.mock-phone-line{
+width:100%;height:5px;
+background:rgba(255,255,255,0.1);
+border-radius:2px;
+}
+.mock-phone-sq{
+width:100%;height:16px;
+background:rgba(255,255,255,0.07);
+border-radius:2px;
+}
+
+.features-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+border:1px solid var(–borde);
+max-width:540px;
+margin:0 auto;
+}
+.feat-item{
+padding:22px 12px;
+text-align:center;
+border-right:1px solid var(–borde);
+border-bottom:1px solid var(–borde);
+transition:background 0.25s;
+}
+.feat-item:nth-child(3n){border-right:none;}
+.feat-item:nth-child(4),.feat-item:nth-child(5),.feat-item:nth-child(6){border-bottom:none;}
+.feat-item:hover{background:rgba(255,255,255,0.03);}
+.feat-emoji{font-size:1.5rem;margin-bottom:8px;display:block;}
+.feat-label{
+font-family:‘Space Mono’,monospace;
+font-size:0.55rem;
+letter-spacing:0.15em;
+color:var(–gris-claro);
+line-height:1.5;
+}
+
+/* ── STATS ── */
+.stats-section{
+padding:80px 24px;
+position:relative;
+}
+.stats-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+border:1px solid var(–borde);
+max-width:520px;
+margin:32px auto;
+}
+.stat-cell{
+padding:36px 24px;
+text-align:center;
+border-right:1px solid var(–borde);
+border-bottom:1px solid var(–borde);
+}
+.stat-cell:nth-child(2n){border-right:none;}
+.stat-cell:nth-child(3),.stat-cell:nth-child(4){border-bottom:none;}
+.stat-num{
+font-family:‘Bebas Neue’,sans-serif;
+font-size:3.5rem;
+letter-spacing:0.05em;
+line-height:1;
+margin-bottom:6px;
+display:block;
+}
+.stat-lbl{
+font-family:‘Space Mono’,monospace;
+font-size:0.55rem;
+letter-spacing:0.15em;
+color:var(–gris);
+line-height:1.6;
+}
+
+.quote-box{
+border:1px solid var(–borde);
+padding:28px 24px;
+max-width:520px;
+margin:0 auto 32px;
+position:relative;
+}
+.quote-tag{
+font-family:‘Space Mono’,monospace;
+font-size:0.55rem;
+letter-spacing:0.2em;
+color:var(–gris);
+margin-bottom:14px;
+display:block;
+}
+.quote-text{
+font-size:1rem;
+line-height:1.75;
+color:var(–gris-claro);
+text-align:center;
+}
+
+/* Countdown big */
+.countdown-box{
+border:1px solid var(–borde);
+padding:22px 24px;
+max-width:520px;
+margin:0 auto;
+text-align:center;
+}
+.countdown-label{
+font-family:‘Space Mono’,monospace;
+font-size:0.55rem;
+letter-spacing:0.2em;
+color:var(–gris);
+margin-bottom:10px;
+display:flex;align-items:center;gap:8px;
+justify-content:center;
+}
+.countdown-label::before{content:‘►’;color:var(–rojo);font-size:0.6rem;}
+.countdown-big{
+font-family:‘Bebas Neue’,sans-serif;
+font-size:clamp(3rem,12vw,5rem);
+letter-spacing:0.1em;
+line-height:1;
+}
+
+/* ── FORM MULTI-STEP ── */
+.form-section{
+padding:60px 24px 80px;
+max-width:600px;
+margin:0 auto;
+}
+
+/* Progress bar */
+.progress-wrap{
+margin-bottom:8px;
+}
+.progress-top{
+display:flex;justify-content:space-between;align-items:center;
+margin-bottom:8px;
+}
+.progress-step-label{
+font-family:‘Space Mono’,monospace;
+font-size:0.6rem;
+letter-spacing:0.15em;
+color:var(–gris);
+}
+.progress-step-label span{color:var(–blanco);font-weight:700;}
+.progress-pct{
+font-family:‘Space Mono’,monospace;
+font-size:0.6rem;
+letter-spacing:0.1em;
+color:var(–gris);
+}
+.progress-bar-bg{
+width:100%;height:2px;
+background:rgba(255,255,255,0.1);
+margin-bottom:16px;
+}
+.progress-bar-fill{
+height:100%;
+background:var(–blanco);
+transition:width 0.4s ease;
+}
+.step-dots{
+display:flex;gap:0;
+margin-bottom:32px;
+}
+.step-dot{
+flex:1;
+height:2px;
+background:rgba(255,255,255,0.15);
+position:relative;
+cursor:pointer;
+transition:background 0.3s;
+}
+.step-dot.done{background:rgba(255,255,255,0.5);}
+.step-dot.active{background:var(–blanco);}
+.step-dot-num{
+position:absolute;
+top:-18px;left:50%;
+transform:translateX(-50%);
+font-family:‘Space Mono’,monospace;
+font-size:0.55rem;
+color:var(–gris);
+}
+.step-dot.active .step-dot-num{color:var(–blanco);}
+
+/* Step panels */
+.step-panel{display:none;}
+.step-panel.active{display:block;}
+
+.step-code{
+font-family:‘Space Mono’,monospace;
+font-size:0.6rem;
+letter-spacing:0.2em;
+color:var(–gris);
+margin-bottom:10px;
+}
+.step-h2{
+font-family:‘Bebas Neue’,sans-serif;
+font-size:2.2rem;
+letter-spacing:0.1em;
+margin-bottom:8px;
+}
+.step-desc{
+font-size:0.88rem;
+color:var(–gris-claro);
+line-height:1.7;
+margin-bottom:28px;
+}
+
+/* Form fields */
+.field-label{
+font-family:‘Space Mono’,monospace;
+font-size:0.55rem;
+letter-spacing:0.2em;
+color:var(–gris);
+margin-bottom:8px;
+display:block;
+}
+.field-input{
+width:100%;
+background:transparent;
+border:1px solid rgba(255,255,255,0.2);
+color:var(–blanco);
+font-family:‘Outfit’,sans-serif;
+font-size:0.95rem;
+padding:14px 16px;
+outline:none;
+transition:border-color 0.25s;
+margin-bottom:18px;
+appearance:none;
+}
+.field-input::placeholder{color:var(–gris-oscuro);}
+.field-input:focus{border-color:rgba(255,255,255,0.5);}
+
+/* Option cards */
+.options-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-bottom:28px;
+}
+.option-card{
+border:1px solid var(–borde);
+padding:18px 14px;
+text-align:center;
+cursor:pointer;
+transition:all 0.25s;
+position:relative;
+background:transparent;
+}
+.option-card:hover{border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.02);}
+.option-card.selected{
+border-color:var(–blanco);
+background:rgba(255,255,255,0.05);
+}
+.option-card.selected::before{
+content:‘✓’;
+position:absolute;top:8px;right:10px;
+font-size:0.65rem;
+color:var(–blanco);
+}
+.option-emoji{font-size:1.4rem;margin-bottom:8px;display:block;}
+.option-name{
+font-family:‘Bebas Neue’,sans-serif;
+font-size:1rem;
+letter-spacing:0.1em;
+margin-bottom:4px;
+}
+.option-price{
+font-family:‘Space Mono’,monospace;
+font-size:0.6rem;
+color:var(–gris);
+letter-spacing:0.1em;
+}
+.option-card.selected .option-price{color:var(–gris-claro);}
+
+/* Toggle extras */
+.extras-list{margin-bottom:28px;}
+.extra-item{
+display:flex;align-items:center;justify-content:space-between;
+padding:14px 16px;
+border-bottom:1px solid var(–borde);
+cursor:pointer;
+transition:background 0.2s;
+gap:12px;
+}
+.extra-item:first-child{border-top:1px solid var(–borde);}
+.extra-item:hover{background:rgba(255,255,255,0.02);}
+.extra-left{display:flex;align-items:center;gap:12px;flex:1;}
+.extra-icon{font-size:1.1rem;flex-shrink:0;}
+.extra-name{font-size:0.88rem;color:var(–gris-claro);}
+.extra-price{
+font-family:‘Space Mono’,monospace;
+font-size:0.6rem;
+color:var(–gris);
+flex-shrink:0;
+letter-spacing:0.05em;
+}
+.extra-item.active .extra-price{color:var(–blanco);}
+
+/* Toggle switch */
+.toggle{
+width:40px;height:22px;
+background:var(–gris-oscuro);
+border-radius:11px;
+position:relative;
+transition:background 0.25s;
+flex-shrink:0;
+}
+.toggle::after{
+content:’’;
+position:absolute;
+width:16px;height:16px;
+border-radius:50%;
+background:var(–blanco);
+top:3px;left:3px;
+transition:left 0.25s;
+}
+.extra-item.active .toggle{background:var(–rojo);}
+.extra-item.active .toggle::after{left:21px;}
+
+/* Live price */
+.live-price-bar{
+background:var(–card);
+border:1px solid var(–borde);
+padding:16px 20px;
+display:flex;align-items:center;justify-content:space-between;
+margin-bottom:20px;
+}
+.live-price-label{
+font-family:‘Space Mono’,monospace;
+font-size:0.55rem;
+letter-spacing:0.15em;
+color:var(–gris);
+}
+.live-price-num{
+font-family:‘Bebas Neue’,sans-serif;
+font-size:1.8rem;
+letter-spacing:0.08em;
+color:var(–blanco);
+}
+
+/* Nav buttons */
+.form-nav{
+display:flex;gap:12px;
+margin-top:8px;
+}
+.btn-back{
+flex:1;
+padding:16px;
+background:transparent;
+border:1px solid var(–borde);
+color:var(–gris);
+font-family:‘Space Mono’,monospace;
+font-size:0.65rem;
+letter-spacing:0.2em;
+cursor:pointer;
+transition:all 0.25s;
+}
+.btn-back:hover{border-color:rgba(255,255,255,0.3);color:var(–blanco);}
+.btn-next{
+flex:2;
+padding:16px;
+background:var(–blanco);
+border:1px solid var(–blanco);
+color:var(–negro);
+font-family:‘Bebas Neue’,sans-serif;
+font-size:1.1rem;
+letter-spacing:0.15em;
+cursor:pointer;
+transition:all 0.25s;
+display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.btn-next:hover{background:#e0e0e0;}
+.btn-next.rojo{background:var(–rojo);border-color:var(–rojo);color:var(–blanco);}
+.btn-next.rojo:hover{background:#cc0000;}
+
+/* ── QUOTE RESULT ── */
+.quote-result{
+border:1px solid var(–borde);
+padding:28px 24px;
+margin-bottom:20px;
+}
+.quote-result-tag{
+font-family:‘Space Mono’,monospace;
+font-size:0.55rem;
+letter-spacing:0.25em;
+color:var(–gris);
+margin-bottom:16px;
+display:block;
+}
+.quote-pkg-badge{
+display:inline-block;
+border:1px solid rgba(255,255,255,0.3);
+padding:4px 14px;
+font-family:‘Space Mono’,monospace;
+font-size:0.6rem;
+letter-spacing:0.15em;
+color:var(–gris-claro);
+margin-bottom:16px;
+}
+.quote-range-label{
+font-family:‘Space Mono’,monospace;
+font-size:0.55rem;
+letter-spacing:0.15em;
+color:var(–gris);
+margin-bottom:8px;
+}
+.quote-amount{
+font-family:‘Bebas Neue’,sans-serif;
+font-size:clamp(2.5rem,8vw,3.8rem);
+letter-spacing:0.05em;
+line-height:1;
+margin-bottom:8px;
+}
+.quote-desc{
+font-size:0.82rem;
+color:var(–gris);
+line-height:1.6;
+margin-bottom:20px;
+}
+.quote-breakdown{margin-bottom:0;}
+.breakdown-line{
+display:flex;justify-content:space-between;align-items:center;
+padding:10px 0;
+border-bottom:1px solid var(–borde);
+font-size:0.82rem;
+color:var(–gris);
+font-family:‘Space Mono’,monospace;
+font-size:0.6rem;
+letter-spacing:0.05em;
+}
+.breakdown-line.total{
+border-bottom:none;
+color:var(–blanco);
+font-weight:700;
+padding-top:14px;
+}
+.breakdown-val{color:var(–blanco);}
+
+/* Send options */
+.send-label{
+font-family:‘Space Mono’,monospace;
+font-size:0.6rem;
+letter-spacing:0.2em;
+color:var(–gris);
+text-align:center;
+margin-bottom:16px;
+display:flex;align-items:center;gap:12px;justify-content:center;
+}
+.send-label::before,.send-label::after{
+content:’’;flex:1;height:1px;background:var(–borde);
+}
+
+.send-cards{display:flex;flex-direction:column;gap:12px;}
+.send-card{
+border:1px solid var(–borde);
+padding:24px;
+text-align:center;
+cursor:pointer;
+text-decoration:none;
+transition:all 0.25s;
+display:block;
+}
+.send-card:hover{border-color:rgba(255,255,255,0.3);}
+.send-card.wa{border-color:rgba(37,211,102,0.4);}
+.send-card.wa:hover{background:rgba(37,211,102,0.05);border-color:rgba(37,211,102,0.7);}
+.send-icon{font-size:1.5rem;margin-bottom:10px;display:block;}
+.send-name{
+font-family:‘Bebas Neue’,sans-serif;
+font-size:1.3rem;
+letter-spacing:0.15em;
+margin-bottom:4px;
+}
+.send-detail{
+font-family:‘Space Mono’,monospace;
+font-size:0.6rem;
+color:var(–gris);
+letter-spacing:0.1em;
+}
+
+.back-link{
+display:block;
+text-align:center;
+font-family:‘Space Mono’,monospace;
+font-size:0.6rem;
+letter-spacing:0.15em;
+color:var(–gris);
+text-decoration:none;
+margin-top:20px;
+cursor:pointer;
+transition:color 0.25s;
+}
+.back-link:hover{color:var(–blanco);}
+
+/* ── FOOTER ── */
+footer{
+padding:28px 24px;
+border-top:1px solid var(–borde);
+text-align:center;
+}
+.footer-text{
+font-family:‘Space Mono’,monospace;
+font-size:0.55rem;
+letter-spacing:0.2em;
+color:var(–gris);
+line-height:2;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes logoPulse{
+0%,100%{filter:drop-shadow(0 0 18px rgba(255,255,255,0.5));}
+50%{filter:drop-shadow(0 0 30px rgba(255,255,255,0.8));}
+}
+@keyframes blink{
+0%,100%{opacity:1;}
+50%{opacity:0.3;}
+}
+@keyframes shimmer{
+0%,100%{opacity:0.12;}
+50%{opacity:0.25;}
+}
+
+@media(max-width:480px){
+.options-grid{grid-template-columns:1fr;}
+.features-grid{grid-template-columns:repeat(2,1fr);}
+.feat-item:nth-child(2n){border-right:none;}
+.feat-item:nth-child(3n){border-right:1px solid var(–borde);}
+}
+</style>
+
+</head>
+<body>
+
+<canvas id="space-canvas"></canvas>
+
+<!-- NAV -->
+
+<nav>
+  <div class="nav-logo">APEX<span>.</span></div>
+  <div class="hamburger">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- ══ HERO ══ -->
+
+<section class="hero">
+  <div class="bracket tl"></div>
+  <div class="bracket tr"></div>
+  <div class="bracket bl"></div>
+  <div class="bracket br"></div>
+
+  <!-- Logo SVG animado -->
+
+  <div class="logo-svg-wrap">
+    <svg viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg" width="120" height="80">
+      <defs>
+        <filter id="gw">
+          <feGaussianBlur stdDeviation="2.5" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <!-- A -->
+      <polygon points="20,70 35,15 50,70" fill="none" stroke="white" stroke-width="2.5" stroke-linejoin="round" filter="url(#gw)"/>
+      <line x1="26" y1="50" x2="44" y2="50" stroke="white" stroke-width="2.5" filter="url(#gw)"/>
+      <!-- P -->
+      <line x1="58" y1="15" x2="58" y2="70" stroke="white" stroke-width="2.5" filter="url(#gw)"/>
+      <path d="M58 15 Q80 15 80 32 Q80 49 58 49" fill="none" stroke="white" stroke-width="2.5" filter="url(#gw)"/>
+      <!-- slash accent -->
+      <line x1="88" y1="70" x2="104" y2="15" stroke="rgba(255,26,26,0.9)" stroke-width="2.5" filter="url(#gw)"/>
+    </svg>
+  </div>
+
+  <div class="hero-divider-line"></div>
+  <h1 class="hero-brand">APEX</h1>
+  <p class="hero-tagline">APEX DIGITAL STUDIO &nbsp;·&nbsp; PÁGINAS QUE VENDEN</p>
+
+  <h2 class="hero-h2">MIENTRAS LEES ESTO<br/>TU COMPETENCIA<br/>RECIBE CLIENTES.</h2>
+  <p class="hero-sub">Tu competencia ya tiene una página que vende.<br/>El momento de actuar es ahora mismo.</p>
+
+  <div class="urgency-bar">
+    <div class="urgency-dot"></div>
+    <span class="urgency-text">► CADA DÍA SIN PÁGINA ES UN CLIENTE QUE SE VA CON TU COMPETENCIA · SOLO 5 SLOTS &nbsp;·&nbsp; EXPIRA EN <span id="hero-countdown">23:59:59</span></span>
+  </div>
+
+  <button class="hero-cta" onclick="document.querySelector('.form-section').scrollIntoView({behavior:'smooth'})">
+    QUIERO MÁS CLIENTES <span class="hero-cta-arrow">→</span>
+  </button>
+</section>
+
+<!-- ══ FEATURES ══ -->
+
+<section class="features-section">
+  <div class="bracket tl"></div>
+  <div class="bracket br"></div>
+
+  <div class="features-header">
+    <span class="section-label">LO QUE INCLUYE CADA PÁGINA</span>
+    <h2 class="section-h2">TU MEJOR VENDEDOR<br/>NUNCA DUERME.</h2>
+  </div>
+
+  <div class="device-wrap">
+    <div class="mock-laptop">
+      <div class="mock-laptop-bar">
+        <div class="mock-dot r"></div>
+        <div class="mock-dot y"></div>
+        <div class="mock-dot g"></div>
+      </div>
+      <div class="mock-screen">
+        <div class="mock-line"></div>
+        <div class="mock-line"></div>
+        <div class="mock-line"></div>
+        <div class="mock-line"></div>
+        <div class="mock-line"></div>
+      </div>
+    </div>
+    <div class="mock-laptop-base"></div>
+    <div class="mock-phone">
+      <div class="mock-phone-line"></div>
+      <div class="mock-phone-sq"></div>
+      <div class="mock-phone-line"></div>
+      <div class="mock-phone-sq"></div>
+    </div>
+  </div>
+
+  <div class="features-grid">
+    <div class="feat-item">
+      <span class="feat-emoji">🎨</span>
+      <span class="feat-label">DISEÑO<br/>ÚNICO</span>
+    </div>
+    <div class="feat-item">
+      <span class="feat-emoji">📱</span>
+      <span class="feat-label">100%<br/>RESPONSIVE</span>
+    </div>
+    <div class="feat-item">
+      <span class="feat-emoji">⚡</span>
+      <span class="feat-label">CARGA<br/>ULTRA RÁPIDA</span>
+    </div>
+    <div class="feat-item">
+      <span class="feat-emoji">💬</span>
+      <span class="feat-label">BOTÓN<br/>WHATSAPP</span>
+    </div>
+    <div class="feat-item">
+      <span class="feat-emoji">🚀</span>
+      <span class="feat-label">ENTREGA<br/>EN 72 HRS</span>
+    </div>
+    <div class="feat-item">
+      <span class="feat-emoji">📸</span>
+      <span class="feat-label">TUS FOTOS<br/>INTEGRADAS</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STATS ══ -->
+
+<section class="stats-section">
+  <div class="bracket tl"></div>
+  <div class="bracket br"></div>
+
+  <div style="text-align:center;margin-bottom:32px;">
+    <span class="section-label">RESULTADOS REALES DE CLIENTES APEX</span>
+    <h2 class="section-h2">NÚMEROS QUE<br/>NO MIENTEN</h2>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-cell">
+      <span class="stat-num">48</span>
+      <span class="stat-lbl">NEGOCIOS YA RECIBEN<br/>CLIENTES POR WHATSAPP</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-num">72h</span>
+      <span class="stat-lbl">DE TU IDEA<br/>A ESTAR EN VIVO</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-num">98%</span>
+      <span class="stat-lbl">REPORTAN MÁS MENSAJES<br/>DE WHATSAPP</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-num" style="font-size:1.3rem">$3.5K</span>
+      <span class="stat-lbl">PRECIO DE ENTRADA<br/>RESULTADOS REALES</span>
+    </div>
+  </div>
+
+  <div class="quote-box">
+    <span class="quote-tag">DATOS DEL MERCADO DIGITAL — 2025</span>
+    <p class="quote-text">El 94% de las primeras impresiones sobre un negocio son por diseño web. Negocios con páginas profesionales convierten <strong>3.4x más</strong> visitas en ventas.</p>
+  </div>
+
+  <div class="countdown-box">
+    <span class="countdown-label">OFERTA ESPECIAL EXPIRA EN</span>
+    <div class="countdown-big" id="big-countdown">23:59:59</div>
+  </div>
+</section>
+
+<!-- ══ FORM MULTI-PASO ══ -->
+
+<section class="form-section">
+
+  <!-- Progress -->
+
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span class="progress-step-label">PASO <span id="step-num">1</span> DE 5</span>
+      <span class="progress-pct" id="progress-pct">20% completado</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progress-bar" style="width:20%"></div>
+    </div>
+    <div class="step-dots">
+      <div class="step-dot active" data-step="0"><span class="step-dot-num">1</span></div>
+      <div class="step-dot" data-step="1"><span class="step-dot-num">2</span></div>
+      <div class="step-dot" data-step="2"><span class="step-dot-num">3</span></div>
+      <div class="step-dot" data-step="3"><span class="step-dot-num">4</span></div>
+      <div class="step-dot" data-step="4"><span class="step-dot-num">5</span></div>
+    </div>
+  </div>
+
+  <!-- PASO 1: Contacto -->
+
+  <div class="step-panel active" id="step-0">
+    <div class="bracket tl"></div>
+    <span class="step-code">// PASO 01 / 05</span>
+    <h2 class="step-h2">DATOS DE CONTACTO</h2>
+    <p class="step-desc">Cuéntanos quién eres. Tu cotización personalizada llega en menos de 24 horas.</p>
+
+```
+<label class="field-label">NOMBRE COMPLETO *</label>
+<input type="text" class="field-input" id="f-nombre" placeholder="Tu nombre completo"/>
+
+<label class="field-label">WHATSAPP / TELÉFONO *</label>
+<input type="tel" class="field-input" id="f-wa" placeholder="+52 311 000 0000"/>
+
+<label class="field-label">NOMBRE DE TU NEGOCIO *</label>
+<input type="text" class="field-input" id="f-negocio" placeholder="Ej. Boutique Valentina"/>
+
+<label class="field-label">CIUDAD</label>
+<input type="text" class="field-input" id="f-ciudad" placeholder="Tu ciudad"/>
+
+<div class="form-nav">
+  <button class="btn-next" onclick="goNext()">SIGUIENTE →</button>
+</div>
+```
+
+  </div>
+
+  <!-- PASO 2: Tipo de página -->
+
+  <div class="step-panel" id="step-1">
+    <div class="bracket tl"></div>
+    <span class="step-code">// PASO 02 / 05</span>
+    <h2 class="step-h2">TIPO DE PÁGINA</h2>
+    <p class="step-desc">¿Qué tipo de página necesita tu negocio?</p>
+
+```
+<div class="options-grid" id="tipo-opts">
+  <div class="option-card" data-val="landing" onclick="selectOption('tipo-opts',this)">
+    <span class="option-emoji">🎯</span>
+    <div class="option-name">LANDING PAGE</div>
+    <div class="option-price">Para WhatsApp / Anuncios</div>
+  </div>
+  <div class="option-card" data-val="catalogo" onclick="selectOption('tipo-opts',this)">
+    <span class="option-emoji">🛍️</span>
+    <div class="option-name">CATÁLOGO</div>
+    <div class="option-price">Tus productos online</div>
+  </div>
+  <div class="option-card" data-val="servicios" onclick="selectOption('tipo-opts',this)">
+    <span class="option-emoji">⚙️</span>
+    <div class="option-name">SERVICIOS</div>
+    <div class="option-price">Clínica, salón, taller</div>
+  </div>
+  <div class="option-card" data-val="portafolio" onclick="selectOption('tipo-opts',this)">
+    <span class="option-emoji">💼</span>
+    <div class="option-name">PORTAFOLIO</div>
+    <div class="option-price">Muestra tu trabajo</div>
+  </div>
+</div>
+
+<div class="form-nav">
+  <button class="btn-back" onclick="goBack()">← VOLVER</button>
+  <button class="btn-next" onclick="goNext()">SIGUIENTE →</button>
+</div>
+```
+
+  </div>
+
+  <!-- PASO 3: Nivel de diseño -->
+
+  <div class="step-panel" id="step-2">
+    <div class="bracket tl"></div>
+    <span class="step-code">// PASO 03 / 05</span>
+    <h2 class="step-h2">NIVEL DE DISEÑO</h2>
+    <p class="step-desc">Elige el nivel que corresponde a tu momento.</p>
+
+```
+<div class="options-grid" id="nivel-opts">
+  <div class="option-card" data-val="esencial" data-price="3500" onclick="selectOption('nivel-opts',this);updatePrice()">
+    <span class="option-emoji">🔵</span>
+    <div class="option-name">ESENCIAL</div>
+    <div class="option-price">Desde $3,500 MXN</div>
+  </div>
+  <div class="option-card" data-val="profesional" data-price="5500" onclick="selectOption('nivel-opts',this);updatePrice()">
+    <span class="option-emoji">🟡</span>
+    <div class="option-name">PROFESIONAL</div>
+    <div class="option-price">Desde $5,500 MXN</div>
+  </div>
+  <div class="option-card" data-val="premium" data-price="8500" onclick="selectOption('nivel-opts',this);updatePrice()">
+    <span class="option-emoji">🟠</span>
+    <div class="option-name">PREMIUM</div>
+    <div class="option-price">Desde $8,500 MXN</div>
+  </div>
+  <div class="option-card" data-val="elite" data-price="14000" onclick="selectOption('nivel-opts',this);updatePrice()">
+    <span class="option-emoji">🔴</span>
+    <div class="option-name">ÉLITE</div>
+    <div class="option-price">Desde $14,000 MXN</div>
+  </div>
+</div>
+
+<div class="form-nav">
+  <button class="btn-back" onclick="goBack()">← VOLVER</button>
+  <button class="btn-next" onclick="goNext()">SIGUIENTE →</button>
+</div>
+```
+
+  </div>
+
+  <!-- PASO 4: Extras -->
+
+  <div class="step-panel" id="step-3">
+    <div class="bracket tl"></div>
+    <span class="step-code">// PASO 04 / 05</span>
+    <h2 class="step-h2">FUNCIONES EXTRA</h2>
+    <p class="step-desc">Activa las que quieres para ver cómo cambia el precio en tiempo real.</p>
+
+```
+<div class="extras-list" id="extras-list">
+  <div class="extra-item" data-price="500" onclick="toggleExtra(this)">
+    <div class="extra-left">
+      <span class="extra-icon">✨</span>
+      <span class="extra-name">Animaciones avanzadas</span>
+    </div>
+    <span class="extra-price">+$500</span>
+    <div class="toggle"></div>
+  </div>
+  <div class="extra-item" data-price="400" onclick="toggleExtra(this)">
+    <div class="extra-left">
+      <span class="extra-icon">🖼️</span>
+      <span class="extra-name">Galería de fotos</span>
+    </div>
+    <span class="extra-price">+$400</span>
+    <div class="toggle"></div>
+  </div>
+  <div class="extra-item" data-price="500" onclick="toggleExtra(this)">
+    <div class="extra-left">
+      <span class="extra-icon">🎬</span>
+      <span class="extra-name">Video de fondo en hero</span>
+    </div>
+    <span class="extra-price">+$500</span>
+    <div class="toggle"></div>
+  </div>
+  <div class="extra-item" data-price="300" onclick="toggleExtra(this)">
+    <div class="extra-left">
+      <span class="extra-icon">⏱️</span>
+      <span class="extra-name">Contador de urgencia</span>
+    </div>
+    <span class="extra-price">+$300</span>
+    <div class="toggle"></div>
+  </div>
+  <div class="extra-item" data-price="600" onclick="toggleExtra(this)">
+    <div class="extra-left">
+      <span class="extra-icon">🔍</span>
+      <span class="extra-name">SEO básico (meta tags)</span>
+    </div>
+    <span class="extra-price">+$600</span>
+    <div class="toggle"></div>
+  </div>
+  <div class="extra-item" data-price="1200" onclick="toggleExtra(this)">
+    <div class="extra-left">
+      <span class="extra-icon">💳</span>
+      <span class="extra-name">Pagos online (MercadoPago)</span>
+    </div>
+    <span class="extra-price">+$1,200</span>
+    <div class="toggle"></div>
+  </div>
+  <div class="extra-item" data-price="400" onclick="toggleExtra(this)">
+    <div class="extra-left">
+      <span class="extra-icon">🌐</span>
+      <span class="extra-name">Dominio conectado (.com)</span>
+    </div>
+    <span class="extra-price">+$400</span>
+    <div class="toggle"></div>
+  </div>
+  <div class="extra-item" data-price="2000" onclick="toggleExtra(this)">
+    <div class="extra-left">
+      <span class="extra-icon">📄</span>
+      <span class="extra-name">Página adicional</span>
+    </div>
+    <span class="extra-price">+$2,000</span>
+    <div class="toggle"></div>
+  </div>
+</div>
+
+<div class="live-price-bar">
+  <span class="live-price-label">MISMO PRECIO QUE TU SELECCIÓN INICIAL</span>
+  <span class="live-price-num" id="extras-total">+$0</span>
+</div>
+
+<div class="form-nav">
+  <button class="btn-back" onclick="goBack()">← VOLVER</button>
+  <button class="btn-next" onclick="goNext()">VER MI COTIZACIÓN →</button>
+</div>
+```
+
+  </div>
+
+  <!-- PASO 5: Resultado + Enviar -->
+
+  <div class="step-panel" id="step-4">
+    <div class="bracket tl"></div>
+    <span class="step-code">// ESTIMACIÓN GENERADA AUTOMÁTICAMENTE</span>
+    <h2 class="step-h2">TU COTIZACIÓN APROXIMADA</h2>
+    <p class="step-desc" style="margin-bottom:20px;">Basada en la información que ingresaste. Revisión humana en 24h.</p>
+
+```
+<div class="quote-result">
+  <span class="quote-result-tag">ESTIMACIÓN APROXIMADA DE INVERSIÓN</span>
+  <div class="quote-pkg-badge" id="q-badge">PROYECTO PROFESIONAL</div>
+  <div class="quote-range-label">TU PROYECTO PODRÍA ESTAR EN EL RANGO DE</div>
+  <div class="quote-amount" id="q-amount">$5,500 MXN</div>
+  <div class="quote-desc">El precio exacto se define tras revisar los detalles finales de tu proyecto.</div>
+  <div class="quote-breakdown">
+    <div class="breakdown-line">
+      <span>Nivel de diseño</span>
+      <span class="breakdown-val" id="q-base">$5,500</span>
+    </div>
+    <div class="breakdown-line">
+      <span>Extras seleccionados</span>
+      <span class="breakdown-val" id="q-extras">$0</span>
+    </div>
+    <div class="breakdown-line total">
+      <span>TOTAL ESTIMADO</span>
+      <span class="breakdown-val" id="q-total">$5,500 MXN</span>
+    </div>
+  </div>
+</div>
+
+<!-- Garantías -->
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+  <div style="flex:1;min-width:120px;border:1px solid var(--borde);padding:10px 12px;text-align:center;">
+    <div style="font-size:0.75rem;margin-bottom:4px;">🔒</div>
+    <div class="feat-label" style="font-size:0.5rem;">SIN COSTO</div>
+  </div>
+  <div style="flex:1;min-width:120px;border:1px solid var(--borde);padding:10px 12px;text-align:center;">
+    <div style="font-size:0.75rem;margin-bottom:4px;">⚡</div>
+    <div class="feat-label" style="font-size:0.5rem;">RESPUESTA EN 24H</div>
+  </div>
+  <div style="flex:1;min-width:120px;border:1px solid var(--borde);padding:10px 12px;text-align:center;">
+    <div style="font-size:0.75rem;margin-bottom:4px;">🌎</div>
+    <div class="feat-label" style="font-size:0.5rem;">ATENCIÓN GLOBAL</div>
+  </div>
+</div>
+
+<span class="send-label">ELIGE CÓMO ENVIARNOS TU COTIZACIÓN</span>
+
+<div class="send-cards">
+  <a class="send-card wa" id="wa-link" href="#" target="_blank">
+    <span class="send-icon">💬</span>
+    <div class="send-name">ENVIAR POR WHATSAPP</div>
+    <div class="send-detail">+52 331 473 8677</div>
+  </a>
+</div>
+
+<span class="back-link" onclick="goBack()">← Volver a editar</span>
+```
+
+  </div>
+
+</section>
+
+<!-- FOOTER -->
+
+<footer>
+  <p class="footer-text">
+    COTIZACIÓN GRATUITA &nbsp;·&nbsp; SIN COMPROMISOS &nbsp;·&nbsp; RESPUESTA EN &lt;24 HORAS &nbsp;·&nbsp; APEX DIGITAL STUDIO
+  </p>
+</footer>
+
+<script>
+
+/* ══════════════════════════════
+   SPACE BACKGROUND
+══════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('space-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, stars = [], shootingStars = [], nebulae = [];
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    initScene();
+  }
+
+  /* ── Stars ── */
+  function initScene() {
+    stars = [];
+    for (let i = 0; i < 280; i++) {
+      const size = Math.random();
+      stars.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: size < 0.6 ? 0.4 : size < 0.85 ? 0.8 : 1.3,
+        a: Math.random() * 0.6 + 0.15,
+        speed: Math.random() * 0.5 + 0.1,
+        phase: Math.random() * Math.PI * 2,
+        color: Math.random() > 0.92
+          ? `rgba(180,160,255,` // lila ocasional
+          : Math.random() > 0.88
+            ? `rgba(200,220,255,` // azul frío
+            : `rgba(255,255,255,`
+      });
+    }
+
+    /* ── Nebulae blobs ── */
+    nebulae = [
+      { x: W * 0.15, y: H * 0.25, rx: 320, ry: 240, color: 'rgba(255,20,20,', a: 0.025 },
+      { x: W * 0.82, y: H * 0.55, rx: 280, ry: 200, color: 'rgba(80,20,160,', a: 0.03 },
+      { x: W * 0.5,  y: H * 0.75, rx: 400, ry: 180, color: 'rgba(20,20,80,',  a: 0.04 },
+      { x: W * 0.7,  y: H * 0.15, rx: 200, ry: 160, color: 'rgba(180,20,20,', a: 0.02 },
+    ];
+  }
+
+  /* ── Planet ── */
+  function drawPlanet() {
+    const px = W * 0.82;
+    const py = H * 0.18;
+    const pr = Math.min(W, H) * 0.13;
+
+    // Outer glow
+    const outerGlow = ctx.createRadialGradient(px, py, pr * 0.5, px, py, pr * 2.2);
+    outerGlow.addColorStop(0, 'rgba(255,30,30,0.06)');
+    outerGlow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.arc(px, py, pr * 2.2, 0, Math.PI * 2);
+    ctx.fillStyle = outerGlow;
+    ctx.fill();
+
+    // Atmosphere ring
+    const atmGlow = ctx.createRadialGradient(px, py, pr * 0.85, px, py, pr * 1.15);
+    atmGlow.addColorStop(0, 'rgba(255,60,60,0)');
+    atmGlow.addColorStop(0.6, 'rgba(255,40,40,0.08)');
+    atmGlow.addColorStop(1, 'rgba(255,10,10,0)');
+    ctx.beginPath();
+    ctx.arc(px, py, pr * 1.15, 0, Math.PI * 2);
+    ctx.fillStyle = atmGlow;
+    ctx.fill();
+
+    // Planet body gradient
+    const grad = ctx.createRadialGradient(
+      px - pr * 0.3, py - pr * 0.3, pr * 0.05,
+      px, py, pr
+    );
+    grad.addColorStop(0,   '#3a1a1a');
+    grad.addColorStop(0.3, '#1e0808');
+    grad.addColorStop(0.65,'#110303');
+    grad.addColorStop(1,   '#060000');
+    ctx.beginPath();
+    ctx.arc(px, py, pr, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Surface bands (horizontal stripes)
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(px, py, pr, 0, Math.PI * 2);
+    ctx.clip();
+    const bands = [
+      { y: -0.35, h: 0.08, a: 0.06, c: '255,80,80' },
+      { y: -0.1,  h: 0.05, a: 0.04, c: '200,50,50' },
+      { y: 0.15,  h: 0.07, a: 0.05, c: '255,60,60' },
+      { y: 0.38,  h: 0.06, a: 0.03, c: '180,30,30' },
+    ];
+    bands.forEach(b => {
+      const by = py + b.y * pr * 2;
+      const bh = b.h * pr * 2;
+      const bg = ctx.createLinearGradient(px - pr, by, px + pr, by);
+      bg.addColorStop(0,   `rgba(${b.c},0)`);
+      bg.addColorStop(0.3, `rgba(${b.c},${b.a})`);
+      bg.addColorStop(0.7, `rgba(${b.c},${b.a})`);
+      bg.addColorStop(1,   `rgba(${b.c},0)`);
+      ctx.fillStyle = bg;
+      ctx.fillRect(px - pr, by - bh/2, pr * 2, bh);
+    });
+    ctx.restore();
+
+    // Specular highlight
+    const spec = ctx.createRadialGradient(
+      px - pr * 0.28, py - pr * 0.28, 0,
+      px - pr * 0.28, py - pr * 0.28, pr * 0.55
+    );
+    spec.addColorStop(0, 'rgba(255,180,180,0.12)');
+    spec.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.arc(px, py, pr, 0, Math.PI * 2);
+    ctx.fillStyle = spec;
+    ctx.fill();
+
+    // Dark limb edge
+    const limb = ctx.createRadialGradient(px, py, pr * 0.75, px, py, pr);
+    limb.addColorStop(0, 'rgba(0,0,0,0)');
+    limb.addColorStop(1, 'rgba(0,0,0,0.55)');
+    ctx.beginPath();
+    ctx.arc(px, py, pr, 0, Math.PI * 2);
+    ctx.fillStyle = limb;
+    ctx.fill();
+
+    // Ring system
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.scale(1, 0.28);
+    const ringGrad = ctx.createRadialGradient(0, 0, pr * 1.15, 0, 0, pr * 1.9);
+    ringGrad.addColorStop(0,   'rgba(255,80,80,0.18)');
+    ringGrad.addColorStop(0.4, 'rgba(255,50,50,0.12)');
+    ringGrad.addColorStop(0.75,'rgba(200,30,30,0.07)');
+    ringGrad.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.arc(0, 0, pr * 1.9, 0, Math.PI * 2);
+    ctx.fillStyle = ringGrad;
+    ctx.fill();
+    // Inner ring gap
+    ctx.beginPath();
+    ctx.arc(0, 0, pr * 1.05, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0)';
+    ctx.fill();
+    ctx.restore();
+
+    // Ring line strokes
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.scale(1, 0.22);
+    for (let ri = 0; ri < 3; ri++) {
+      const rr = pr * (1.2 + ri * 0.22);
+      ctx.beginPath();
+      ctx.arc(0, 0, rr, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,60,60,${0.08 - ri * 0.02})`;
+      ctx.lineWidth = 1.5 - ri * 0.3;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  /* ── Small distant planet ── */
+  function drawSmallPlanet() {
+    const px = W * 0.08;
+    const py = H * 0.72;
+    const pr = Math.min(W, H) * 0.045;
+
+    const glow = ctx.createRadialGradient(px, py, 0, px, py, pr * 2);
+    glow.addColorStop(0, 'rgba(100,60,200,0.08)');
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.arc(px, py, pr * 2, 0, Math.PI * 2);
+    ctx.fillStyle = glow;
+    ctx.fill();
+
+    const grad = ctx.createRadialGradient(
+      px - pr * 0.3, py - pr * 0.3, 0,
+      px, py, pr
+    );
+    grad.addColorStop(0, '#2a1a4a');
+    grad.addColorStop(0.5, '#140a28');
+    grad.addColorStop(1, '#050010');
+    ctx.beginPath();
+    ctx.arc(px, py, pr, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    const limb = ctx.createRadialGradient(px, py, pr * 0.6, px, py, pr);
+    limb.addColorStop(0, 'rgba(0,0,0,0)');
+    limb.addColorStop(1, 'rgba(0,0,0,0.6)');
+    ctx.beginPath();
+    ctx.arc(px, py, pr, 0, Math.PI * 2);
+    ctx.fillStyle = limb;
+    ctx.fill();
+  }
+
+  /* ── Nebulae ── */
+  function drawNebulae() {
+    nebulae.forEach(n => {
+      const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, Math.max(n.rx, n.ry));
+      g.addColorStop(0, n.color + (n.a * 1.5) + ')');
+      g.addColorStop(0.5, n.color + n.a + ')');
+      g.addColorStop(1, n.color + '0)');
+      ctx.save();
+      ctx.scale(n.rx / Math.max(n.rx, n.ry), n.ry / Math.max(n.rx, n.ry));
+      const scale = Math.max(n.rx, n.ry);
+      const cx = n.x * Math.max(n.rx, n.ry) / n.rx;
+      const cy = n.y * Math.max(n.rx, n.ry) / n.ry;
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(n.x, n.y);
+      ctx.scale(n.rx / 300, n.ry / 300);
+      const g2 = ctx.createRadialGradient(0, 0, 0, 0, 0, 300);
+      g2.addColorStop(0, n.color + (n.a * 1.5) + ')');
+      g2.addColorStop(0.5, n.color + n.a + ')');
+      g2.addColorStop(1, n.color + '0)');
+      ctx.beginPath();
+      ctx.arc(0, 0, 300, 0, Math.PI * 2);
+      ctx.fillStyle = g2;
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  /* ── Shooting stars ── */
+  function spawnShootingStar() {
+    if (Math.random() > 0.003) return;
+    shootingStars.push({
+      x: Math.random() * W * 0.7,
+      y: Math.random() * H * 0.4,
+      len: Math.random() * 120 + 60,
+      speed: Math.random() * 6 + 4,
+      angle: Math.PI / 4 + (Math.random() - 0.5) * 0.3,
+      a: 1,
+      life: 1
+    });
+  }
+
+  function drawShootingStars() {
+    shootingStars = shootingStars.filter(s => s.life > 0);
+    shootingStars.forEach(s => {
+      const dx = Math.cos(s.angle) * s.len;
+      const dy = Math.sin(s.angle) * s.len;
+      const g = ctx.createLinearGradient(s.x, s.y, s.x - dx, s.y - dy);
+      g.addColorStop(0, `rgba(255,255,255,${s.life * 0.9})`);
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(s.x - dx, s.y - dy);
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      s.x += Math.cos(s.angle) * s.speed;
+      s.y += Math.sin(s.angle) * s.speed;
+      s.life -= 0.02;
+    });
+  }
+
+  /* ── Main loop ── */
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Deep space gradient bg
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0,   '#000000');
+    bg.addColorStop(0.4, '#030008');
+    bg.addColorStop(0.7, '#050002');
+    bg.addColorStop(1,   '#000000');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    drawNebulae();
+    drawPlanet();
+    drawSmallPlanet();
+
+    // Stars
+    stars.forEach(s => {
+      const alpha = s.a * (0.4 + 0.6 * Math.sin(t * s.speed + s.phase));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = s.color + alpha + ')';
+      ctx.fill();
+
+      // Tiny cross sparkle for bigger stars
+      if (s.r > 1) {
+        ctx.strokeStyle = s.color + (alpha * 0.4) + ')';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(s.x - s.r * 2.5, s.y);
+        ctx.lineTo(s.x + s.r * 2.5, s.y);
+        ctx.moveTo(s.x, s.y - s.r * 2.5);
+        ctx.lineTo(s.x, s.y + s.r * 2.5);
+        ctx.stroke();
+      }
+    });
+
+    spawnShootingStar();
+    drawShootingStars();
+
+    t += 0.016;
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  draw();
+})();
+
+/* ── STATE ── */
+const state = {
+  currentStep: 0,
+  totalSteps: 5,
+  nombre: '',
+  negocio: '',
+  wa: '',
+  ciudad: '',
+  tipo: '',
+  nivel: '',
+  nivelPrice: 0,
+  extrasTotal: 0,
+  extrasNames: []
+};
+
+/* ── COUNTDOWN ── */
+function startCountdown() {
+  const savedEnd = localStorage.getItem('apex-countdown-end');
+  let endTime;
+  if (savedEnd) {
+    endTime = parseInt(savedEnd);
+    if (endTime < Date.now()) {
+      endTime = Date.now() + 24 * 60 * 60 * 1000;
+      localStorage.setItem('apex-countdown-end', endTime);
+    }
+  } else {
+    endTime = Date.now() + 23 * 60 * 60 * 1000 + 59 * 60 * 1000 + 59 * 1000;
+    localStorage.setItem('apex-countdown-end', endTime);
+  }
+
+  function tick() {
+    const diff = endTime - Date.now();
+    if (diff <= 0) { return; }
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    const str = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    document.getElementById('hero-countdown').textContent = str;
+    document.getElementById('big-countdown').textContent = str;
+    setTimeout(tick, 1000);
+  }
+  tick();
+}
+startCountdown();
+
+/* ── STEP NAVIGATION ── */
+function updateProgressUI() {
+  const s = state.currentStep;
+  const pct = Math.round(((s + 1) / state.totalSteps) * 100);
+  document.getElementById('step-num').textContent = s + 1;
+  document.getElementById('progress-pct').textContent = pct + '% completado';
+  document.getElementById('progress-bar').style.width = pct + '%';
+
+  document.querySelectorAll('.step-dot').forEach((d, i) => {
+    d.classList.remove('active', 'done');
+    if (i < s) d.classList.add('done');
+    if (i === s) d.classList.add('active');
+  });
+
+  document.querySelectorAll('.step-panel').forEach((p, i) => {
+    p.classList.toggle('active', i === s);
+  });
+}
+
+function goNext() {
+  if (state.currentStep === 0) {
+    state.nombre = document.getElementById('f-nombre').value.trim();
+    state.wa = document.getElementById('f-wa').value.trim();
+    state.negocio = document.getElementById('f-negocio').value.trim();
+    state.ciudad = document.getElementById('f-ciudad').value.trim();
+    if (!state.nombre || !state.wa) {
+      alert('Por favor completa nombre y WhatsApp.');
+      return;
+    }
+  }
+  if (state.currentStep < state.totalSteps - 1) {
+    state.currentStep++;
+    updateProgressUI();
+    if (state.currentStep === state.totalSteps - 1) buildQuote();
+    window.scrollTo({top: document.querySelector('.form-section').offsetTop - 80, behavior: 'smooth'});
+  }
+}
+
+function goBack() {
+  if (state.currentStep > 0) {
+    state.currentStep--;
+    updateProgressUI();
+    window.scrollTo({top: document.querySelector('.form-section').offsetTop - 80, behavior: 'smooth'});
+  }
+}
+
+/* ── OPTION SELECTION ── */
+function selectOption(gridId, el) {
+  document.querySelectorAll('#' + gridId + ' .option-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+
+  if (gridId === 'nivel-opts') {
+    state.nivel = el.dataset.val;
+    state.nivelPrice = parseInt(el.dataset.price);
+  } else if (gridId === 'tipo-opts') {
+    state.tipo = el.dataset.val;
+  }
+}
+
+/* ── EXTRAS TOGGLE ── */
+function toggleExtra(el) {
+  el.classList.toggle('active');
+  updatePrice();
+}
+
+function updatePrice() {
+  let extrasSum = 0;
+  let names = [];
+  document.querySelectorAll('#extras-list .extra-item.active').forEach(el => {
+    extrasSum += parseInt(el.dataset.price);
+    names.push(el.querySelector('.extra-name').textContent);
+  });
+  state.extrasTotal = extrasSum;
+  state.extrasNames = names;
+  document.getElementById('extras-total').textContent = extrasSum > 0 ? '+$' + extrasSum.toLocaleString() : '+$0';
+}
+
+/* ── BUILD QUOTE ── */
+function buildQuote() {
+  const base = state.nivelPrice || 5500;
+  const extras = state.extrasTotal;
+  const total = base + extras;
+
+  const nivelMap = {
+    esencial: 'PROYECTO ESENCIAL',
+    profesional: 'PROYECTO PROFESIONAL',
+    premium: 'PROYECTO PREMIUM',
+    elite: 'PROYECTO ÉLITE',
+    '': 'PROYECTO PROFESIONAL'
+  };
+
+  document.getElementById('q-badge').textContent = nivelMap[state.nivel] || 'PROYECTO PROFESIONAL';
+  document.getElementById('q-amount').textContent = '$' + total.toLocaleString() + ' MXN';
+  document.getElementById('q-base').textContent = '$' + base.toLocaleString();
+  document.getElementById('q-extras').textContent = extras > 0 ? '+$' + extras.toLocaleString() : '$0';
+  document.getElementById('q-total').textContent = '$' + total.toLocaleString() + ' MXN';
+
+  // Build WhatsApp message
+  const extrasStr = state.extrasNames.length > 0
+    ? '\n• ' + state.extrasNames.join('\n• ')
+    : 'Ninguno';
+
+  const msg = `Hola, vengo de la página de APEX y quiero mi cotización.
+
+*Datos:*
+• Nombre: ${state.nombre}
+• Negocio: ${state.negocio}
+• Ciudad: ${state.ciudad}
+
+*Mi proyecto:*
+• Tipo: ${state.tipo || 'Landing Page'}
+• Nivel: ${state.nivel || 'Profesional'}
+• Extras: ${extrasStr}
+
+*Estimado: $${total.toLocaleString()} MXN*`;
+
+  const encoded = encodeURIComponent(msg);
+  document.getElementById('wa-link').href = `https://wa.me/523314738677?text=${encoded}`;
+}
+</script>
+
+</body>
+</html>
